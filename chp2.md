@@ -147,7 +147,7 @@ later, I might:
 -   Create a function (or loop??) to generate the plots without
     repeating myself so much.
 
-\#2M2
+## 2M2
 
 Now the prior should be 0 for p&lt;0.5 (we do know more that half the
 globe is covered in water, after all), and “a positive constant” for p
