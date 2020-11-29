@@ -3,6 +3,23 @@ chp2
 Vasco Brazão
 11/14/2020
 
+## Packages
+
+``` r
+library(tidyverse)
+```
+
+    ## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --
+
+    ## v ggplot2 3.3.2     v purrr   0.3.4
+    ## v tibble  3.0.4     v dplyr   1.0.2
+    ## v tidyr   1.1.2     v stringr 1.4.0
+    ## v readr   1.4.0     v forcats 0.5.0
+
+    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+    ## x dplyr::filter() masks stats::filter()
+    ## x dplyr::lag()    masks stats::lag()
+
 ## 2E1
 
 *The probability of rain on Monday* could be restated as *the
@@ -23,3 +40,109 @@ The statement can be interpreted in many ways. For instance, we could
 interpret it to mean that the 70% globe surface is colored blue, and
 that any of the points on the surface is equally likely to land under
 your right index finger.
+
+## 2M1
+
+Computing and plotting the grid approximate posterior distribution for
+different sets of observations. I will use 20 bins for this, and do my
+best to use tidyverse. Let’s see how it goes.
+
+1.  W, W, W
+2.  W, W, W, L
+3.  L, W, W, L, W, W, W
+
+``` r
+p_grid <- tibble(
+  # define the grid
+  probs = seq(from = 0, to = 1, length.out = 20),
+  # define the prior
+  prior = 1
+)
+```
+
+Above I defined the grid. Now I would need to compute the likelihood,
+for each probability, of the data.Then multiply the likelihood with the
+prior, and then standardize.
+
+``` r
+p_grid <- p_grid %>%
+  mutate(
+    # likelihood for (1), (2), then (3)
+    first = dbinom(3, size = 3, prob = probs),
+    secon = dbinom(3, size = 4, prob = probs),
+    third = dbinom(5, size = 7, prob = probs),
+    
+    # posteriors
+    first_uns_pos = first * prior,
+    secon_uns_pos = secon * prior,
+    third_uns_pos = third * prior,
+    
+    # standardizing
+    first_pos = first_uns_pos / sum(first_uns_pos),
+    secon_pos = secon_uns_pos / sum(secon_uns_pos),
+    third_pos = third_uns_pos / sum(third_uns_pos)
+  )
+```
+
+Now plots!
+
+``` r
+# graph for (1)
+p_grid %>%
+  ggplot(aes(x = probs, y = first_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = W, W, W",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+```
+
+![](chp2_files/figure-gfm/2m1.plots-1.png)<!-- -->
+
+``` r
+# graph for (2)
+p_grid %>%
+  ggplot(aes(x = probs, y = secon_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = W, W, W, L",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+```
+
+![](chp2_files/figure-gfm/2m1.plots-2.png)<!-- -->
+
+``` r
+# graph for (3)
+p_grid %>%
+  ggplot(aes(x = probs, y = third_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = L, W, W, L, W, W, W",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+```
+
+![](chp2_files/figure-gfm/2m1.plots-3.png)<!-- -->
+
+Yuhu!
+
+Some thoughts: lots of repetitions in my code. If I try to improve it
+later, I might:
+
+-   Create actual variables for the data, and then a function that
+    extracts the correct values to place in dbinom()
+-   Create a function (or loop??) to generate the plots without
+    repeating myself so much.
