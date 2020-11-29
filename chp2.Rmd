@@ -117,4 +117,86 @@ Yuhu!
 Some thoughts: lots of repetitions in my code. If I try to improve it later, I might:
 
 * Create actual variables for the data, and then a function that extracts the correct values to place in dbinom() 
-* Create a function (or loop??) to generate the plots without repeating myself so much. 
+* Create a function (or loop??) to generate the plots without repeating myself so much.
+
+#2M2
+
+Now the prior should be 0 for p<0.5 (we do know more that half the globe is covered in water, after all), and "a positive constant" for p >= 0.5. Perhaps this positive constant should be 2, since the prior needs to integrate to 1?
+
+So we can just copy the code above and change the prior, methinks.
+
+```{r 2m2.grid}
+p_grid <- tibble(
+  # define the grid
+  probs = seq(from = 0, to = 1, length.out = 20),
+  # define the prior
+  prior = ifelse(
+    probs < .5, 0, 2
+  )
+)
+```
+
+Above I defined the grid. Now I would need to compute the likelihood, for each probability, of the data.Then multiply the likelihood with the prior, and then standardize. 
+
+```{r 2m2.posteriors}
+p_grid <- p_grid %>%
+  mutate(
+    # likelihood for (1), (2), then (3)
+    first = dbinom(3, size = 3, prob = probs),
+    secon = dbinom(3, size = 4, prob = probs),
+    third = dbinom(5, size = 7, prob = probs),
+    
+    # posteriors
+    first_uns_pos = first * prior,
+    secon_uns_pos = secon * prior,
+    third_uns_pos = third * prior,
+    
+    # standardizing
+    first_pos = first_uns_pos / sum(first_uns_pos),
+    secon_pos = secon_uns_pos / sum(secon_uns_pos),
+    third_pos = third_uns_pos / sum(third_uns_pos)
+  )
+```
+
+Thus, the plots become:
+
+```{r 2m2.plots}
+# graph for (1)
+p_grid %>%
+  ggplot(aes(x = probs, y = first_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = W, W, W",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+
+# graph for (2)
+p_grid %>%
+  ggplot(aes(x = probs, y = secon_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = W, W, W, L",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+
+# graph for (3)
+p_grid %>%
+  ggplot(aes(x = probs, y = third_pos)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Grid approx. posterior distribution for probability of W",
+    subtitle = "Data = L, W, W, L, W, W, W",
+    x = "Probability of W",
+    y = "Posterior"
+  ) +
+  theme_bw()
+```
