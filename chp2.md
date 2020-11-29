@@ -152,7 +152,9 @@ later, I might:
 Now the prior should be 0 for p&lt;0.5 (we do know more that half the
 globe is covered in water, after all), and “a positive constant” for p
 &gt;= 0.5. Perhaps this positive constant should be 2, since the prior
-needs to integrate to 1?
+needs to integrate to 1? (Update: thinking through it, perhaps any
+constant would work, since we standardize anyway? Might try to test it
+later, but I’ll leave the original for now.)
 
 So we can just copy the code above and change the prior, methinks.
 
