@@ -245,3 +245,34 @@ p_grid %>%
 ```
 
 ![](chp2_files/figure-gfm/2m2.plots-3.png)<!-- -->
+
+## 2M3
+
+So, Bayes’ rule will probably be handy.
+
+P(Earth\|Land) = P(Land\|Earth) \* P(Earth) / P(Land)
+
+But in this case what is P(Land)? I’d say it’s the total proportion of
+land in the two planets? So, in this experiment in general, what is the
+probability that you will get “land”? That would be P(Land\|Earth) \*
+P(Earth) + P(Land\|Mars) \* P(Mars), an expected value of sorts…
+
+Substituting: P(Earth\|Land) = P(Land\|Earth) \* P(Earth) /
+P(Land\|Earth) \* P(Earth) + P(Land\|Mars) \* P(Mars)
+
+Ok, now in code.
+
+``` r
+p_earth <- .5
+p_mars <- .5
+p_land_given_earth <- .3
+p_land_given_mars <- 1
+
+p_earth_given_land <- (p_land_given_earth * p_earth) / (p_land_given_earth * p_earth + p_land_given_mars * p_mars)
+
+print(p_earth_given_land)
+```
+
+    ## [1] 0.2307692
+
+Note to self: learn to make the equations pretty.
