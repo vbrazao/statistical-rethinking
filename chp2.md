@@ -276,3 +276,60 @@ print(p_earth_given_land)
     ## [1] 0.2307692
 
 Note to self: learn to make the equations pretty.
+
+## 2M4
+
+``` r
+cards <- c(
+  first = 2,
+  secon = 1,
+  third = 0
+)
+
+black_given_black <- cards[["first"]] / sum(cards)
+
+print(black_given_black)
+```
+
+    ## [1] 0.6666667
+
+## 2M5
+
+``` r
+cards <- c(
+  first = 2,
+  secon = 1,
+  third = 0,
+  fourt = 2
+)
+
+black_given_black <- (cards[["first"]] + cards[["fourt"]]) / sum(cards)
+
+print(black_given_black)
+```
+
+    ## [1] 0.8
+
+## 2M6
+
+``` r
+cards <- tibble(
+  card = c(
+    first = 2,
+    secon = 1,
+    third = 0
+  ),
+  ways = c(
+    1,
+    2,
+    3
+  ),
+  update = card*ways
+)
+
+black_given_black <- cards$update[[1]]/sum(cards$update)
+
+print(black_given_black)
+```
+
+    ## [1] 0.5
