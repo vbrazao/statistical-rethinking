@@ -333,3 +333,28 @@ print(black_given_black)
 ```
 
     ## [1] 0.5
+
+## 2M7
+
+So we have
+
+Black \| ? ; White \| ?
+
+On the table.
+
+Let’s number the possibilities:
+
+1.  BB ; WB
+2.  BB ; WW
+3.  BW ; WW
+
+Possibility (1) can happen in 2 ways, because BB can be flipped;
+Possibility (2) can happen in 4 ways, analogously; And possibility (3)
+can happen in 2 ways. Thus, out of 8 possible ways, 6 of them have a
+black side on the bottom.
+
+``` r
+6/8
+```
+
+    ## [1] 0.75
