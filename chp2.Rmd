@@ -303,6 +303,16 @@ A new panda has just given birth to twins. What is the probability the next birt
 
 The overall probability of a random panda giving birth to twins would be 15%. So, assuming independent events, we could say the probability of twins on the next birth is 15%. But this ignores what we learned... If the first birth is twins, shouldn't we update our assumed probabilities for the pandas? It seems slightly more likely now that the panda is of species B! But that's the next question. So I'll try to answer it and then come back here.
 
+Did it! So... now we can update:
+
+Given the first birth of twins, we now think the probability our panda is species A is 1/3, and for B 2/3. Thus, the probability of twins on the second birth would be:
+
+```{r 2h1}
+1/3 * .1 + 2/3 * .2
+```
+
+So, slightly higher. The events are *not* independent.
+
 ## 2H2
 
 P(A|Twins) = P(Twins|A) * P(A) / P(Twins)
