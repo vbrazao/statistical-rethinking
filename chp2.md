@@ -358,3 +358,105 @@ black side on the bottom.
 ```
 
     ## [1] 0.75
+
+## 2H1
+
+Important info: A birth twins 10% of time; B birth twins 20% of time.
+Same prevalence; no new information -&gt; 50% chance a random panda is
+of either species.
+
+A new panda has just given birth to twins. What is the probability the
+next birth will also be twins?
+
+The overall probability of a random panda giving birth to twins would be
+15%. So, assuming independent events, we could say the probability of
+twins on the next birth is 15%. But this ignores what we learned… If the
+first birth is twins, shouldn’t we update our assumed probabilities for
+the pandas? It seems slightly more likely now that the panda is of
+species B! But that’s the next question. So I’ll try to answer it and
+then come back here.
+
+Did it! So… now we can update:
+
+Given the first birth of twins, we now think the probability our panda
+is species A is 1/3, and for B 2/3. Thus, the probability of twins on
+the second birth would be:
+
+``` r
+1/3 * .1 + 2/3 * .2
+```
+
+    ## [1] 0.1666667
+
+So, slightly higher. The events are *not* independent.
+
+## 2H2
+
+P(A\|Twins) = P(Twins\|A) \* P(A) / P(Twins)
+
+``` r
+p_twins_a <- .1
+p_a <- .5
+p_twins <- .15
+
+p_a_twins <- p_twins_a * p_a / p_twins
+
+print(p_a_twins)
+```
+
+    ## [1] 0.3333333
+
+Aha!
+
+## 2H3
+
+We just do it again, but updating
+
+``` r
+p_notwins_a <- .9
+p_a <- 1/3
+p_notwins <- 1-(1/6) #this is because, on observing Twins, we updated
+                     #the prob that we would observe Twins next time
+                     #to 1/6 instead of .15
+
+p_a_notwins <- p_notwins_a * p_a / p_notwins
+
+print(p_a_notwins)
+```
+
+    ## [1] 0.36
+
+Although, when I see how jffist solves it, I get an itch to try to solve
+it the same way. My approach seems clunky.
+
+## 2H4
+
+Without prior data:
+
+``` r
+p_A <- .5
+p_B <- .5
+
+p_test_A <- .8
+p_test_B <- .65
+
+(p_A_given_test_A <- p_test_A * p_A / (p_test_A * p_A + (1-p_test_B) * p_B)) 
+```
+
+    ## [1] 0.6956522
+
+But, if we include the previous info of Twins-noTwins births…
+
+``` r
+p_A <- .36
+p_B <- .64
+
+p_test_A <- .8
+p_test_B <- .65
+
+(p_A_given_test_A <- p_test_A * p_A / (p_test_A * p_A + (1-p_test_B) * p_B)) 
+```
+
+    ## [1] 0.5625
+
+Mindblowing. Also pretty sure jffist didn’t solve this one correctly?
