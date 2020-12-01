@@ -347,3 +347,30 @@ print(p_a_notwins)
 
 Although, when I see how jffist solves it, I get an itch to try to solve it the same way. My approach seems clunky.
 
+## 2H4
+
+Without prior data:
+
+```{r 2H4}
+p_A <- .5
+p_B <- .5
+
+p_test_A <- .8
+p_test_B <- .65
+
+(p_A_given_test_A <- p_test_A * p_A / (p_test_A * p_A + (1-p_test_B) * p_B)) 
+```
+
+But, if we include the previous info of Twins-noTwins births...
+
+```{r 2H4.with.knowledge}
+p_A <- .36
+p_B <- .64
+
+p_test_A <- .8
+p_test_B <- .65
+
+(p_A_given_test_A <- p_test_A * p_A / (p_test_A * p_A + (1-p_test_B) * p_B)) 
+```
+
+Mindblowing. Also pretty sure jffist didn't solve this one correctly?
