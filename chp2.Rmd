@@ -295,4 +295,14 @@ Possibility (1) can happen in 2 ways, because BB can be flipped; Possibility (2)
 ```{r 2m7}
 6/8
 ```
+## 2H1
+
+Important info: A birth twins 10% of time; B birth twins 20% of time. Same prevalence; no new information -> 50% chance a random panda is of either species.
+
+A new panda has just given birth to twins. What is the probability the next birth will also be twins?
+
+The overall probability of a random panda giving birth to twins would be 15%. So, assuming independent events, we could say the probability of twins on the next birth is 15%. But this ignores what we learned... If the first birth is twins, shouldn't we update our assumed probabilities for the pandas? It seems slightly more likely now that the panda is of species B! But that's the next question. So I'll try to answer it and then come back here.
+
+
+
 
