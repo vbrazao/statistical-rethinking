@@ -13,3 +13,44 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r packages}
 library(tidyverse)
 ```
+
+Code for the easy problems (from book):
+
+```{r easy.samples}
+
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep( 1 , 1000 )
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+
+set.seed(100)
+
+samples <- sample(p_grid, prob = posterior, size = 1e4, replace = TRUE)
+```
+
+## 3E1
+
+```{r 3e1}
+sum(samples < .2) / length(samples)
+```
+## 3E2
+
+```{r 3e2}
+sum(samples > .8) / length(samples)
+```
+## 3E3
+
+```{r 3e3}
+(sum(samples > .2) - sum(samples >= .8))/ length(samples)
+```
+## 3E4
+
+```{r 3e4}
+quantile(samples, .2)
+```
+## 3E5
+
+```{r 3e5}
+quantile(samples, .8)
+```
