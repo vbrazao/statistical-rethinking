@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Packages
 ```{r packages}
 library(tidyverse)
+library(rethinking)
 ```
 
 Code for the easy problems (from book):
@@ -53,4 +54,15 @@ quantile(samples, .2)
 
 ```{r 3e5}
 quantile(samples, .8)
+```
+## 3E6
+
+```{r 3e6}
+rethinking::HPDI(samples, .66)
+```
+
+## 3E7
+
+```{r 3e7}
+rethinking::PI(samples, .66)
 ```
