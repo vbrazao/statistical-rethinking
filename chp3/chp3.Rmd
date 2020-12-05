@@ -1,0 +1,15 @@
+---
+title: "chp3"
+author: "Vasco Brazão"
+date: "12/5/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Packages
+```{r packages}
+library(tidyverse)
+```
