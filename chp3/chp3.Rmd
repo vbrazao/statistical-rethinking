@@ -172,27 +172,32 @@ All in all, the model performs a bit better.
 This one looks fun! Not sure if there is an easy way to do it, but I will try some brute force I suppose. Will also help me brush up on functions and simulations and whatnot, I guess.
 
 ```{r 3m6}
-# this will be the input to our function
-tosses <- 20
+pi_width <- function(tosses = 20){
+  # the amount of waters we observe is random, but depends on the true proportion
+  # which we take to be .7
+  waters <- rbinom(1, size = tosses, prob = .7)
+  
+  # now we can construct the posterior, using first the flat prior
+  globe_pos <- tibble(
+    p_grid = seq(from = 0, to = 1, length.out = 1000),
+    prior = rep(1, 1000),
+    likelihood = dbinom(waters, size = tosses, prob = p_grid),
+    posterior = likelihood * prior / sum(likelihood * prior)
+  )
+  
+  # then we sample from the posterior
+  pos_samples <- sample(globe_pos$p_grid, 
+                        prob = globe_pos$posterior, 
+                        size = 1e4, replace = TRUE)
+  
+  # now we feed the samples to the PI function
+  interval <- rethinking::PI(pos_samples, .99)
+  
+  # this is what we want to minimize, what our function will return
+  width <- interval[[2]] - interval[[1]]
+  
+  return(width)
+}
 
-# the amount of waters we observe is random, but depends on the true proportion
-# which we take to be .7
-waters <- rbinom(1, size = tosses, prob = .7)
 
-# now we can construct the posterior, using first the flat prior
-globe_pos <- tibble(
-  p_grid = seq(from = 0, to = 1, length.out = 1000),
-  prior = rep(1, 1000),
-  likelihood = dbinom(waters, size = tosses, prob = p_grid),
-  posterior = likelihood * prior / sum(likelihood * prior)
-)
-
-# then we sample from the posterior
-pos_samples <- sample(globe_pos$p_grid, prob = globe_pos$posterior, size = 1e4, replace = TRUE)
-
-# now we feed the samples to the PI function
-interval <- rethinking::PI(pos_samples, .99)
-
-# this is what we want to minimize, what our function will return
-width <- interval[[2]] - interval[[1]]
 ```
