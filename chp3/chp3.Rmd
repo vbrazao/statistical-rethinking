@@ -66,3 +66,40 @@ rethinking::HPDI(samples, .66)
 ```{r 3e7}
 rethinking::PI(samples, .66)
 ```
+## 3M1
+This time trying to be a little more tidyverse-y
+```{r 3m1}
+globe <- tibble(
+  p_grid = seq(from = 0, to = 1, length.out = 1000),
+  prior = rep(1, 1000),
+  likelihood = dbinom(8, size = 15, prob = p_grid),
+  posterior = likelihood * prior / sum(likelihood * prior)
+)
+
+#a graph for good measure
+
+globe3m1post <- globe %>%
+  ggplot(aes(x = p_grid, y = posterior)) +
+  geom_line()
+
+print(globe3m1post)
+```
+
+## 3M2
+
+```{r 3m2}
+set.seed(100)
+
+samples <- sample(globe$p_grid, prob = globe$posterior, size = 1e4, replace = TRUE)
+
+rethinking::HPDI(samples, .90)
+```
+
+## 3M3
+
+```{r 3m3}
+w <- rbinom(1e4, size = 15, prob=samples)
+
+# probability of 8 W
+sum(w == 8)/1e4
+```
