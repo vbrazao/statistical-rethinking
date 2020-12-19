@@ -347,3 +347,5 @@ births %>%
   summary()
 ```
 Ok, so the most common type of family here is girl-boy, and girl-girl families seems really underepresented. Could this be because parents keep trying to have a boy? That would mean that parents whose first two births are girls are more likely to become a three child family, thus no longer qualifying for this dataset. Would be cool to simulate this in some agent-based model to see if we could reproduce these results with this idea. But, just verbally, this is also consistent with their being relatively fewer boy-boy families, since parents would stop having children after the first boy and thus not qualify for this dataset. 
+
+Idea: look into dj navarro's robust tools materials for inspiration on how to make this model work in R.
