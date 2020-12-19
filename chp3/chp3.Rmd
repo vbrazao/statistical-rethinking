@@ -256,3 +256,18 @@ grid_births <- tibble(
 
 grid_births[which.max(grid_births$posterior), ]$prob
 ```
+## 3H2
+
+```{r 3h2}
+births_sample <- sample(grid_births$prob, 
+                        size = 1e4, 
+                        prob = grid_births$posterior,
+                        replace = TRUE)
+
+for (i in c(.5, .89, .90)){
+  print(rethinking::HPDI(births_sample, i))
+}
+
+```
+
+
