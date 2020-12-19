@@ -152,7 +152,7 @@ w <- rbinom(1e4, size = 15, prob = samples)
 sum(w == 8)/1e4
 ```
 
-It is a little higher than before.
+It is a little lower than before.
 
 Now for 6 waters in 9 tosses.
 
@@ -163,5 +163,7 @@ new_w <- rbinom(1e4, size = 9, prob = samples)
 sum(new_w == 6)/1e4
 ```
 
-It is a little lower than before.
+It is a little higher than before.
+
+All in all, the model performs a bit better.
 
