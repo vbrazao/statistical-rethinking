@@ -329,3 +329,21 @@ replicates_first_girls %>%
 ```
 
 It seems there were many more boys born after a girl than our model (based on the total data) would predict. But I'm not sure why?
+
+```{r crosstab}
+births <- births %>%
+  mutate(
+    family = case_when(
+      birth1 == 0 & birth2 == 0 ~ "gg",
+      birth1 == 0 & birth2 == 1 ~ "gb",
+      birth1 == 1 & birth2 == 0 ~ "bg",
+      birth1 == 1 & birth2 == 1 ~ "bb"
+    ),
+    family = factor(family)
+  )
+
+births %>%
+  select(family) %>%
+  summary()
+```
+Ok, so the most common type of family here is girl-boy, and girl-girl families seems really underepresented. Could this be because parents keep trying to have a boy? That would mean that parents whose first two births are girls are more likely to become a three child family, thus no longer qualifying for this dataset. Would be cool to simulate this in some agent-based model to see if we could reproduce these results with this idea. But, just verbally, this is also consistent with their being relatively fewer boy-boy families, since parents would stop having children after the first boy and thus not qualify for this dataset. 
