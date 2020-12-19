@@ -264,10 +264,14 @@ births_sample <- sample(grid_births$prob,
                         prob = grid_births$posterior,
                         replace = TRUE)
 
-for (i in c(.5, .89, .90)){
+for (i in c(.5, .89, .97)){
   print(rethinking::HPDI(births_sample, i))
 }
 
 ```
 
+## 3H3
 
+```{r 3h3}
+
+```
