@@ -103,3 +103,65 @@ w <- rbinom(1e4, size = 15, prob=samples)
 # probability of 8 W
 sum(w == 8)/1e4
 ```
+## 3M4
+
+```{r 3m4}
+new_w <- rbinom(1e4, size = 9, prob = samples)
+
+# probability of 6 w
+sum(new_w == 6)/1e4
+
+```
+
+## 3M5
+```{r 3m5}
+# first, we create the data again
+globe_new <- tibble(
+  p_grid = seq(from = 0, to = 1, length.out = 1000),
+  prior = ifelse(p_grid >= .5, 1, 0),
+  likelihood = dbinom(8, size = 15, prob = p_grid),
+  posterior = likelihood * prior / sum(likelihood * prior)
+)
+
+# graph
+
+globe3m5post <- globe_new %>%
+  ggplot(aes(x = p_grid, y = posterior)) +
+  geom_line()
+
+print(globe3m5post)
+```
+To calculate de hpdi
+
+```{r 3m5.hpdi}
+set.seed(100)
+
+samples <- sample(globe_new$p_grid, prob = globe_new$posterior, size = 1e4, replace = TRUE)
+
+rethinking::HPDI(samples, .90)
+```
+
+We can see it is quite a bit narrower, and now confidently excludes values below .5. The upper bound did not shrink by a lot though.
+
+For the posterior predictive check: what does our model think is the probability of observing 8 waters in 15 tosses?
+
+```{r 3m5.ppc}
+w <- rbinom(1e4, size = 15, prob = samples)
+
+# probability of 8 W
+sum(w == 8)/1e4
+```
+
+It is a little higher than before.
+
+Now for 6 waters in 9 tosses.
+
+```{r 3m5.sixwaters}
+new_w <- rbinom(1e4, size = 9, prob = samples)
+
+# probability of 6 w
+sum(new_w == 6)/1e4
+```
+
+It is a little lower than before.
+
