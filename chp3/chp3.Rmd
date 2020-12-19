@@ -273,5 +273,59 @@ for (i in c(.5, .89, .97)){
 ## 3H3
 
 ```{r 3h3}
+replicates <- tibble(
+  boys = rbinom(n = 1e4,
+                size = 200, 
+                prob = births_sample)
+)
+
+replicates %>%
+  ggplot(aes(x = boys)) +
+  geom_density() +
+  geom_vline(xintercept = 111)
 
 ```
+
+The distribution seems ok. The most likely outcome is the "correct" outcome. 
+
+## 3H4
+
+```{r 3h4}
+replicates_first <- tibble(
+  boys_first = rbinom(n = 1e4,
+                size = 100, 
+                prob = births_sample)
+)
+
+replicates_first %>%
+  ggplot(aes(x = boys_first)) +
+  geom_density() +
+  geom_vline(xintercept = sum(births$birth1))
+```
+
+Now the most likely outcome seems quite far away from the true value.
+
+## 3H5
+
+```{r 3h5}
+girls_first <- length(births$birth1) - sum(births$birth1)
+
+boys_after_girls <- births %>%
+  filter(birth1 == 0) %>%
+  summarise(
+    boys = sum(birth2)
+  )
+
+replicates_first_girls <- tibble(
+  boys_after_girls = rbinom(n = 1e4,
+                size = 49, 
+                prob = births_sample)
+)
+
+replicates_first_girls %>%
+  ggplot(aes(x = boys_after_girls)) +
+  geom_density() +
+  geom_vline(xintercept = boys_after_girls[[1]])
+```
+
+It seems there were many more boys born after a girl than our model (based on the total data) would predict. But I'm not sure why?
