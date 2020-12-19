@@ -239,7 +239,7 @@ sum(w == 8)/1e4
 
     ## [1] 0.163
 
-It is a little higher than before.
+It is a little lower than before.
 
 Now for 6 waters in 9 tosses.
 
@@ -252,4 +252,92 @@ sum(new_w == 6)/1e4
 
     ## [1] 0.2353
 
-It is a little lower than before.
+It is a little higher than before.
+
+All in all, the model performs a bit better.
+
+## 3M6
+
+This one looks fun! Not sure if there is an easy way to do it, but I
+will try some brute force I suppose. Will also help me brush up on
+functions and simulations and whatnot, I guess.
+
+``` r
+pi_width <- function(tosses = 20){
+  # the amount of waters we observe is random, but depends on the true 
+  # proportion which we take to be .7
+  waters <- rbinom(1, size = tosses, prob = .7)
+  
+  # now we can construct the posterior, using first the flat prior
+  globe_pos <- tibble(
+    p_grid = seq(from = 0, to = 1, length.out = 1000),
+    prior = rep(1, 1000),
+    likelihood = dbinom(waters, size = tosses, prob = p_grid),
+    posterior = likelihood * prior / sum(likelihood * prior)
+  )
+  
+  # then we sample from the posterior
+  pos_samples <- sample(globe_pos$p_grid, 
+                        prob = globe_pos$posterior, 
+                        size = 1e4, replace = TRUE)
+  
+  # now we feed the samples to the PI function
+  interval <- rethinking::PI(pos_samples, .99)
+  
+  # this is what we want to minimize, what our function will return
+  width <- interval[[2]] - interval[[1]]
+  
+  return(width)
+}
+
+# I want to get 10 data points for different values of tosses, and just see what
+# that looks like. After some experiment, we narrow in on the range 2000:2500
+
+width_data <- 
+  tibble(
+    n_tosses = rep(2000:2500, each = 10),
+    width = map_dbl(.x = n_tosses, .f = ~ pi_width(tosses = .x))
+  )
+
+
+width_data %>%
+  ggplot(aes(x = n_tosses, y = width)) +
+  geom_point(alpha = .5) +
+  geom_smooth()
+```
+
+    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+
+![](chp3_files/figure-gfm/3m6-1.png)<!-- -->
+
+``` r
+width_data %>%
+  group_by(n_tosses) %>%
+  mutate(
+    avg = mean(width)
+  ) %>%
+  filter(avg <= .05) %>%
+  select(n_tosses, avg) %>%
+  distinct()
+```
+
+    ## # A tibble: 290 x 2
+    ## # Groups:   n_tosses [290]
+    ##    n_tosses    avg
+    ##       <int>  <dbl>
+    ##  1     2171 0.0499
+    ##  2     2186 0.0500
+    ##  3     2197 0.0500
+    ##  4     2199 0.0499
+    ##  5     2204 0.0500
+    ##  6     2206 0.0498
+    ##  7     2207 0.0499
+    ##  8     2208 0.0495
+    ##  9     2210 0.0494
+    ## 10     2211 0.0498
+    ## # ... with 280 more rows
+
+If we throw the globe more than 2170, the expected width of the interval
+is less than .05.
+
+Wonder how other people solved this!

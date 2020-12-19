@@ -173,8 +173,8 @@ This one looks fun! Not sure if there is an easy way to do it, but I will try so
 
 ```{r 3m6}
 pi_width <- function(tosses = 20){
-  # the amount of waters we observe is random, but depends on the true proportion
-  # which we take to be .7
+  # the amount of waters we observe is random, but depends on the true 
+  # proportion which we take to be .7
   waters <- rbinom(1, size = tosses, prob = .7)
   
   # now we can construct the posterior, using first the flat prior
@@ -199,5 +199,33 @@ pi_width <- function(tosses = 20){
   return(width)
 }
 
+# I want to get 10 data points for different values of tosses, and just see what
+# that looks like. After some experiment, we narrow in on the range 2000:2500
 
+width_data <- 
+  tibble(
+    n_tosses = rep(2000:2500, each = 10),
+    width = map_dbl(.x = n_tosses, .f = ~ pi_width(tosses = .x))
+  )
+
+
+width_data %>%
+  ggplot(aes(x = n_tosses, y = width)) +
+  geom_point(alpha = .5) +
+  geom_smooth()
+
+width_data %>%
+  group_by(n_tosses) %>%
+  mutate(
+    avg = mean(width)
+  ) %>%
+  filter(avg <= .05) %>%
+  select(n_tosses, avg) %>%
+  distinct()
 ```
+
+If we throw the globe more than 2170, the expected width of the interval is less than .05. 
+
+Wonder how other people solved this!
+
+
