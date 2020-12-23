@@ -12,6 +12,69 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Packages
 ```{r packages}
 library(tidyverse)
-library(rethinking)
+library(brms)
+library(here)
 ```
 
+##4E1
+
+The first line is the likelihood, the two others lines are the priors for mu and sigma.
+
+##4E2
+
+2 parameters, mu and sigma
+
+##4E3
+
+Oh god. Still need to learn how to format things so...
+
+Pr(mu, sigma|y_i) = PRODUCT_i(Normal(y_i|mu, sigma) * Normal(mu|0, 10) * Exponential(sigma|1) / DOUBLE_INTEGRAL(PRODUCT_i(Normal(y_i|mu, sigma) * Normal(mu|0, 10) * Exponential(sigma|1) )) dmu dsigma
+
+Happy?
+
+##4E4
+
+The second line is the linear model.
+
+##4E5
+
+There are three parameters: alpha, beta, and sigma.
+
+##4M1
+
+```{r 4m1.sim}
+N <- 100000
+
+y_values <- tibble(
+  mu = rnorm(N, 0, 10),
+  sigma = rexp(N, 1),
+  y = rnorm(N, mean = mu, sd = sigma)
+)
+
+
+hist(y_values$y, breaks = 1000)
+```
+
+##4M2
+
+As I'm using `brms`, and trying to learn how to use it at the same time, I'll skip the `quap` stuff and jump straight into `brms`.
+
+```{r 4m2}
+#this is what it maybe would look like in brms. hell if I know
+
+b4m1 <- brm(data = y_values,
+            family = gaussian,
+            y ~ 1,
+            prior = c(prior(normal(0, 10), class = Intercept),
+                      prior(exponential(1), class = sigma)),
+            iter = 2000, warmup = 1000, chains = 4, cores = 4,
+            seed = 4,
+            file = here("b4m1")
+)
+```
+
+```{r 4m2.chains}
+
+plot(b4m1)
+
+```
