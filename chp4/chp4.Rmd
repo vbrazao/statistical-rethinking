@@ -16,15 +16,15 @@ library(brms)
 library(here)
 ```
 
-##4E1
+## 4E1
 
 The first line is the likelihood, the two others lines are the priors for mu and sigma.
 
-##4E2
+## 4E2
 
 2 parameters, mu and sigma
 
-##4E3
+## 4E3
 
 Oh god. Still need to learn how to format things so...
 
@@ -32,15 +32,15 @@ Pr(mu, sigma|y_i) = PRODUCT_i(Normal(y_i|mu, sigma) * Normal(mu|0, 10) * Exponen
 
 Happy?
 
-##4E4
+## 4E4
 
 The second line is the linear model.
 
-##4E5
+## 4E5
 
 There are three parameters: alpha, beta, and sigma.
 
-##4M1
+## 4M1
 
 ```{r 4m1.sim}
 N <- 100000
@@ -55,7 +55,7 @@ y_values <- tibble(
 hist(y_values$y, breaks = 1000)
 ```
 
-##4M2
+## 4M2
 
 As I'm using `brms`, and trying to learn how to use it at the same time, I'll skip the `quap` stuff and jump straight into `brms`.
 
@@ -78,3 +78,43 @@ b4m1 <- brm(data = y_values,
 plot(b4m1)
 
 ```
+
+## 4M4
+
+$$
+\begin{align*}
+\text{height}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i  & = \alpha + \beta \times (\text{year}_i - 2) \\
+\alpha & \sim \operatorname{Normal}(160, 10) \\
+\beta  & \sim \operatorname{Normal}(0, 5) \\
+\sigma & \sim \operatorname{Exponential}(1/10) \\
+\end{align*}
+$$
+
+## 4M5
+
+Of course, I almost forgot!
+
+$$
+\begin{align*}
+\text{height}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i  & = \alpha + \beta \times (\text{year}_i - 2) \\
+\alpha & \sim \operatorname{Normal}(140, 20) \\
+\beta  & \sim \operatorname{Log-Normal}(0, 5) \\
+\sigma & \sim \operatorname{Exponential}(1/10) \\
+\end{align*}
+$$
+
+## 4M6 
+
+Assuming also that our sample has kids of roughly the same age, we can adjust the prior for the variance. But not sure this one makes sense?
+
+$$
+\begin{align*}
+\text{height}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i  & = \alpha + \beta \times (\text{year}_i - 2) \\
+\alpha & \sim \operatorname{Normal}(140, 32) \\
+\beta  & \sim \operatorname{Log-Normal}(0, 5) \\
+\sigma & \sim \operatorname{Exponential}(1/32) \\
+\end{align*}
+$$
