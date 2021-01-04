@@ -43,6 +43,10 @@ library(here)
 
     ## here() starts at C:/Users/admin/Documents/statistical-rethinking
 
+``` r
+library(tinytex)
+```
+
 ## 4E1
 
 The first line is the likelihood, the two others lines are the priors
@@ -144,12 +148,8 @@ $$
 Assuming also that our sample has kids of roughly the same age, we can
 adjust the prior for the variance. But not sure this one makes sense?
 
-$$
-\\begin{align\*}
-\\text{height}\_i & \\sim \\operatorname{Normal}(\\mu\_i, \\sigma) \\\\
+$$\\text{height}\_i & \\sim \\operatorname{Normal}(\\mu\_i, \\sigma) \\\\
 \\mu\_i  & = \\alpha + \\beta \\times (\\text{year}\_i - 2) \\\\
 \\alpha & \\sim \\operatorname{Normal}(140, 32) \\\\
 \\beta  & \\sim \\operatorname{Log-Normal}(0, 5) \\\\
-\\sigma & \\sim \\operatorname{Exponential}(1/32) \\\\
-\\end{align\*}
-$$
+\\sigma & \\sim \\operatorname{Exponential}(1/32)$$
