@@ -216,3 +216,17 @@ d2 %>%
         panel.grid = element_blank())
 ```
 They look exactly the same?
+
+## 4M8
+
+```{r}
+detach(package:brms, unload = T)
+library(rethinking)
+
+data(cherry_blossoms)
+d <- cherry_blossoms
+rm(cherry_blossoms)
+
+d2 <- d %>%
+  tidyr::drop_na(doy)
+```
