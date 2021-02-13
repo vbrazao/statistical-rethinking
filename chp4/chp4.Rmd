@@ -238,3 +238,72 @@ First, I want to fit the same model as in the chapter. Need to get the data firs
 ```
 
 ## 4H1
+First, let's just make a dataset with our weights
+
+```{r 4h1.weights}
+new_kung <- tibble(
+  id = 1:5,
+  weight = c(46.95, 43.72, 64.78, 32.59, 54.63)
+)
+```
+
+I'm working with the same priors as the brms implementation, section 4.4.2. I hope to become confident enough to set my own priors soon...
+
+$$
+\begin{align*}
+\text{height}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i  & = \alpha + \beta \times (\text{weight}_i - \bar{weight}) \\
+\alpha & \sim \operatorname{Normal}(178, 20) \\
+\beta  & \sim \operatorname{Log-Normal}(0, 1) \\
+\sigma & \sim \operatorname{Uniform}(0, 50) \\
+\end{align*}
+$$
+
+```{r 4H1}
+d2 <-
+  d2 %>% 
+  mutate(weight_c = weight - mean(weight))
+
+# formula from brms implementation, section 4.4.2
+b4.3 <- 
+  brm(data = d2, 
+      family = gaussian,
+      height ~ 1 + weight_c,
+      prior = c(prior(normal(178, 20), class = Intercept),
+                prior(lognormal(0, 1), class = b),
+                prior(uniform(0, 50), class = sigma)),
+      iter = 28000, warmup = 27000, chains = 4, cores = 4,
+      seed = 4,
+      file = "fits/b04.03")
+```
+
+```{r 4h1.contd}
+new_kung <- new_kung %>%
+  mutate(
+    weight_c = weight - mean(d2$weight)
+  )
+
+mu <-
+  fitted(b4.3,
+         summary = F,
+         newdata = new_kung) %>%
+  data.frame() %>%
+  set_names(new_kung$weight) %>%
+  mutate(iter = 1:n()) %>%
+  pivot_longer(-iter,
+               names_to = "weight",
+               values_to = "height") %>%
+  mutate(weight = as.numeric(weight))
+
+pred_height <-
+  predict(b4.3,
+          newdata = new_kung,
+          probs = c(.055, .945)) %>%
+  data.frame() %>%
+  bind_cols(new_kung)
+
+pred_height
+```
+
+`pred_height` has what we need! Estimate = expected height; and the bounds of the 89% interval are in the Q5.5. and Q94.5 columns.
+
