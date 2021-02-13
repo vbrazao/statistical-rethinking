@@ -221,15 +221,20 @@ d2 %>%
 They look exactly the same?
 
 ## 4M8
+First, I want to fit the same model as in the chapter. Need to get the data first.
+
+(Upon second thought: I will skip the exercises with splines for now. I want to understand brms better before I come back to this. So for now I'll do only H1 to H4.)
 
 ```{r}
-detach(package:brms, unload = T)
-library(rethinking)
-
-data(cherry_blossoms)
-d <- cherry_blossoms
-rm(cherry_blossoms)
-
-d2 <- d %>%
-  tidyr::drop_na(doy)
+#detach(package:brms, unload = T)
+#library(rethinking)
+#
+#data(cherry_blossoms)
+#d <- cherry_blossoms
+#rm(cherry_blossoms)
+#
+#d2 <- d %>%
+#  tidyr::drop_na(doy)
 ```
+
+## 4H1
