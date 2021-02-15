@@ -340,7 +340,7 @@ summary(b4h2)
 ```
 (a) From what I understand, this means the model expects a 2.72cm increase in height for every extra kg of weight.
 
-```{r 4h2.summary}
+```{r 4h2.plot}
 d3 %>%
   ggplot(aes(x = weight_c, y = height)) +
   geom_abline(intercept = fixef(b4h2)[1], 
