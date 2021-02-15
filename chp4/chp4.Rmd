@@ -378,3 +378,79 @@ d3 %>%
   geom_point(aes(y = height))
 ```
 (c) It seems the model is poor over all, but poorest around the edges: it overestimates height both for low and for high weight.
+
+## 4H3
+
+Ok, so we shall now model height as dependent upon the log of weight. 
+
+A bit like...
+
+$$
+\begin{align*}
+\text{height}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i  & = \alpha + \beta \times \operatorname{Log}(\text{weight}_i) \\
+\alpha & \sim \operatorname{Normal}(178, 20) \\
+\beta  & \sim \operatorname{Log-Normal}(0, 1) \\
+\sigma & \sim \operatorname{Uniform}(0, 50) \\
+\end{align*}
+$$
+
+?
+
+And how does that look in brms?
+
+```{r 4h3.fit}
+b4h3 <- 
+  brm(data = d, 
+      family = gaussian,
+      height ~ 1 + log(weight),
+      prior = c(prior(normal(100, 50), class = Intercept),
+                prior(lognormal(0, 1), class = b),
+                prior(uniform(0, 50), class = sigma)),
+      iter = 28000, warmup = 27000, chains = 4, cores = 4,
+      seed = 4,
+      file = "fits/b4h3.correct")
+```
+
+```{r 4h3.model}
+plot(b4h3)
+
+summary(b4h3)
+```
+Not sure I can interpret the parameters tbh.
+
+```{r 4h3.plots}
+d %>%
+  ggplot(aes(x = weight)) +
+  geom_point(aes(y = height))
+
+new_weight <- tibble(
+  weight = 5:65
+)
+
+mu_summary <-
+  fitted(b4h3, 
+         newdata = new_weight,
+         probs = c(0.015, 0.985)) %>%
+  data.frame() %>%
+  bind_cols(new_weight)
+
+pred_height <-
+  predict(b4h3,
+          newdata = new_weight,
+          probs = c(0.015, 0.985)) %>%
+  data.frame() %>%
+  bind_cols(new_weight)
+
+
+d %>% ggplot(aes(x = weight)) +
+  geom_ribbon(data = pred_height, 
+              aes(y = Estimate, ymin = Q1.5, ymax = Q98.5),
+              fill = "grey83") +
+  geom_smooth(data = mu_summary,
+              aes(y = Estimate, ymin = Q1.5, ymax = Q98.5),
+              stat = "identity",
+              fill = "grey70", color = "black", alpha = 1, size = 1/2) +
+  geom_point(data = d, aes(y = height), alpha = .7) +
+  theme_bw()
+```
