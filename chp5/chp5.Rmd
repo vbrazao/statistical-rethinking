@@ -1,0 +1,13 @@
+---
+title: "chp5"
+author: "Vasco Brazão"
+date: "15/02/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$ e^i = 2 $
+
