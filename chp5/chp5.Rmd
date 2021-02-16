@@ -10,5 +10,20 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-$ e^i = 2 $
+## 5E1
+
+(4) would be the standard way to write a multiple linear regression. I Suppose (2) could be valid? If we force the intercept to be 0. (3) seems plausible, but from the lack of an index on beta I would think you're forcing the beta for x to be equal to -1 * the beta for z, which is.. strange?
+
+Van Bussel agrees https://github.com/castels/StatisticalRethinking/blob/master/Chapter%205/VanBussel_Chapter5_Questions.pdf
+
+
+
+## 5E2
+
+mu_latitude_i = alpha + beta_adiv * adiv_i + beta_pdiv * pdiv_i
+
+## 5E3
+
+
+
 
