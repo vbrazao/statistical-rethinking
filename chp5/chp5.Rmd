@@ -24,6 +24,13 @@ mu_latitude_i = alpha + beta_adiv * adiv_i + beta_pdiv * pdiv_i
 
 ## 5E3
 
+$$time_i \sim \text{Normal(} \mu, \sigma) $$
+$$\mu_i = \alpha + \beta_f f_i + \beta_s s_i $$
+Both slope parameters should be positive. 
+
+Van Bussel agrees!
+
+But I still can make a stupid latex document. One day. 
 
 
 
