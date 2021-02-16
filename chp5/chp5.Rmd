@@ -2,7 +2,7 @@
 title: "chp5"
 author: "Vasco Brazão"
 date: "15/02/2021"
-output: github_document
+output: pdf_document
   
 ---
 
@@ -30,7 +30,7 @@ Both slope parameters should be positive.
 
 Van Bussel agrees!
 
-But I still can make a stupid latex document. One day. 
+But I still can't make a stupid latex document. One day. 
 
 ## 5E4
 
@@ -38,4 +38,4 @@ But I still can make a stupid latex document. One day.
 
 Van Bussel disagrees - 4 is not correct. But I still think it works?
 
-
+And a latex document thing was created! I cannot believe my eyes. What fresh hell awaits me now? We shall see.. we shall see.
