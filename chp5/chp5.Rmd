@@ -10,6 +10,9 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r packages}
+library(tidyverse)
+```
 ## 5E1
 
 (4) would be the standard way to write a multiple linear regression. I Suppose (2) could be valid? If we force the intercept to be 0. (3) seems plausible, but from the lack of an index on beta I would think you're forcing the beta for x to be equal to -1 * the beta for z, which is.. strange?
@@ -24,7 +27,7 @@ mu_latitude_i = alpha + beta_adiv * adiv_i + beta_pdiv * pdiv_i
 
 ## 5E3
 
-$$time_i \sim \text{Normal(} \mu, \sigma) $$
+$$time_i \sim \text{Normal}(\mu, \sigma)$$
 $$\mu_i = \alpha + \beta_f f_i + \beta_s s_i $$
 Both slope parameters should be positive. 
 
@@ -39,3 +42,38 @@ But I still can't make a stupid latex document. One day.
 Van Bussel disagrees - 4 is not correct. But I still think it works?
 
 And a latex document thing was created! I cannot believe my eyes. What fresh hell awaits me now? We shall see.. we shall see.
+
+## 5M1
+
+Inventing a spurious correlation.
+
+Let's say that both British and German tourists like going to sunny places. For a given year, they base their decision of whether to go Portugal for vacation on the number of sunlight days of the previous year. Germans respond more strongly to this parameter because they now have an easier time going to Portugal than Brits, and they also stray less from the line because they are German.
+
+```{r spurious}
+n <- 1000
+
+df <- tibble(
+  sun = rnorm(n, 0, 1),
+  brits = 0.5*sun + rnorm(n, 0, 1),
+  germs = 0.9*sun + rnorm(n, 0, 0.2)
+)
+```
+
+```{r}
+pairs(df)
+```
+
+
+There appears to be a positive relationship betweet amount of brits and amount of germans.
+
+```{r 5m1}
+m1 <- lm(df$brits ~ df$germs)
+m2 <- lm(df$brits ~ df$germs + df$sun)
+
+summary(m1)
+summary(m2)
+```
+Et voila. when sun is in the model, knowing how many germans went to Portugal does not really tell us much more about how many brits went.
+
+
+
