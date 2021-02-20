@@ -94,3 +94,8 @@ lm(third ~ germs + brits, data = df)
 ```
 Indeed! When both are included in the model, the coefficients are much greater. When only one is included, its relationship is masked. 
 
+## 5M3
+
+If, in one year, a person marries, divorces, and marries again, they will have added two counts of marriage for that one year -- marriage rate is affected by remarriages. Thus, in a society where divorce is accepted but being married is highly desirable, we could reasonably assume a casual link wherein the divorce rate influences the marriage rate. In years with (say) 0 divorces, marriages would mostly be first marriages. In years with a very high number of divorces, we might see that same baseline of new marriages PLUS a surge of remarriages driving up the marriage rate.
+
+You could do a simple linear regression, though that would not inform you about the direction of causality. Alternatively, if you have reason to believe that the time between divorce and remarriage is about a year, you should see an effect of divorce at year 0 on marriage at year 1, but not so much the other way around.
