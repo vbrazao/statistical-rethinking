@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r packages}
 library(tidyverse)
+library(here)
+library(brms)
 ```
 ## 5E1
 
@@ -75,11 +77,11 @@ summary(m2)
 ```
 Et voila. when sun is in the model, knowing how many germans went to Portugal does not really tell us much more about how many brits went.
 
-## 5M1
+## 5M2
 
 Now imagine a third country. Those citizens go to Portugal in higher numbers when they know their German friends will be going, but they prefer to avoid Brits on the beaches, for whatever reason.
 
-```{r 5m1}
+```{r 5m2}
 df <- df %>%
   mutate(
     third = rnorm(n, mean = germs - brits)
@@ -87,7 +89,7 @@ df <- df %>%
 
 pairs(df)
 ```
-```{r 5m1.models}
+```{r 5m2.models}
 lm(third ~ germs, data = df)
 lm(third ~ brits, data = df)
 lm(third ~ germs + brits, data = df)
@@ -99,3 +101,47 @@ Indeed! When both are included in the model, the coefficients are much greater. 
 If, in one year, a person marries, divorces, and marries again, they will have added two counts of marriage for that one year -- marriage rate is affected by remarriages. Thus, in a society where divorce is accepted but being married is highly desirable, we could reasonably assume a casual link wherein the divorce rate influences the marriage rate. In years with (say) 0 divorces, marriages would mostly be first marriages. In years with a very high number of divorces, we might see that same baseline of new marriages PLUS a surge of remarriages driving up the marriage rate.
 
 You could do a simple linear regression, though that would not inform you about the direction of causality. Alternatively, if you have reason to believe that the time between divorce and remarriage is about a year, you should see an effect of divorce at year 0 on marriage at year 1, but not so much the other way around.
+
+## 5M4
+
+Found the LDS data on wikipedia. 
+
+```{r}
+data(WaffleDivorce, package = "rethinking")
+
+d <- WaffleDivorce %>% as_tibble()
+lds <- readxl::read_xlsx(path = here("chp5/ldsdata.xlsx"),
+                         col_names = TRUE)
+
+d2 <- full_join(d, lds, by = c("Location" = "State")) %>%
+  select(Loc, MedianAgeMarriage, Marriage, Divorce, LDS) %>%
+  filter(!is.na(Loc)) %>%
+  mutate(
+    across(.cols = MedianAgeMarriage:LDS,
+           .fns = ~ rethinking::standardize(.))
+  )
+```
+
+Now it's all standardized and in `d2`.
+
+```{r 5m4}
+lm(Divorce ~ MedianAgeMarriage + Marriage + LDS, data = d2) %>% summary
+
+
+b5m4 <- 
+   brm(data = d2, 
+       family = gaussian,
+       Divorce ~ 1 + MedianAgeMarriage + Marriage + LDS,
+       prior = c(prior(normal(0, 0.2), class = Intercept),
+                 prior(normal(0, 0.5), class = b),
+                 prior(exponential(1), class = sigma)),
+       iter = 2000, warmup = 1000, chains = 4, cores = 4,
+       seed = 5,
+       sample_prior = T,
+       file = "b5m4")
+
+print(b5m4)
+
+summary(b5m4)
+```
+
