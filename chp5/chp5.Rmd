@@ -75,11 +75,11 @@ summary(m2)
 ```
 Et voila. when sun is in the model, knowing how many germans went to Portugal does not really tell us much more about how many brits went.
 
-## 5E5
+## 5M1
 
 Now imagine a third country. Those citizens go to Portugal in higher numbers when they know their German friends will be going, but they prefer to avoid Brits on the beaches, for whatever reason.
 
-```{r 5e5}
+```{r 5m1}
 df <- df %>%
   mutate(
     third = rnorm(n, mean = germs - brits)
@@ -87,7 +87,7 @@ df <- df %>%
 
 pairs(df)
 ```
-```{r 5e5.models}
+```{r 5m1.models}
 lm(third ~ germs, data = df)
 lm(third ~ brits, data = df)
 lm(third ~ germs + brits, data = df)
