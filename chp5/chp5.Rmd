@@ -170,3 +170,21 @@ Ok, so...
 * We could regress obesity on EatingOut and Exercise. The coefficients should shrink because they are collinear. 
 * We could regress obesity on EatingOut, Exercise, and Driving. The coefficient for Driving should shrink?
 
+## 5H1
+
+```{r 5h1}
+dag <- dagitty::dagitty(
+  "dag{M -> A; A -> D}",
+  layout = TRUE
+)
+
+plot(dag)
+
+dagitty::impliedConditionalIndependencies(dag)
+```
+
+Without conditioning, all pairs of variables should be associated. 
+
+D is independent of M, conditioned on A. (A here is the mediator)
+
+This is consistent with the pattern of results from the three models (m5.1, m5.2, and m5.3).
