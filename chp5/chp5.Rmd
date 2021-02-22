@@ -188,3 +188,107 @@ Without conditioning, all pairs of variables should be associated.
 D is independent of M, conditioned on A. (A here is the mediator)
 
 This is consistent with the pattern of results from the three models (m5.1, m5.2, and m5.3).
+
+## 5H2
+
+Taking the previous DAG, I am to fit a model and use it to estimate the effect of halving a State's marriage rate (M). 
+
+Side-note: I recentely read this blogpost: https://elevanth.org/blog/2018/07/14/statistical-rethinking-edition-2-eta-2020/
+
+In which Richard says: 
+
+> "First, I force the reader to explicitly specify every assumption of the model. Some readers of the first edition lobbied me to use simplified formula tools like brms or rstanarm. Those are fantastic packages, and graduating to use them after this book is recommended. But I don’t see how a person can come to understand the model when using those tools. The priors being hidden isn’t the most limiting part. Instead, since linear model formulas like y ~ (1|x) + z don’t show the parameters, nor even all of the terms, it is not easy to see how the mathematical model relates to the code. It is ultimately kinder to be a bit cruel and require more work. So the formula lists remain. In this book, you are programming the log-posterior, down to the exact relationship between each variable and coefficient. You’ll thank me later."
+
+So I just decided that I will use the rethinking package to fit the models after all, and then do them in brms as well. This is becoming a giant mess. I embrace the chaos.
+
+```{r 5h2.data}
+# we will want these for later: mean and sd od MedianAgeMarriage
+M_mean <- mean(d$Marriage)
+M_sd <- sd(d$Marriage)
+
+d2 <- d2 %>% 
+  mutate(
+    M = Marriage,
+    A = MedianAgeMarriage,
+    D = Divorce
+  )
+```
+
+Now the  models we need to estimate would be M -> A, and then A -> D, right? No need for a model that has M and A?
+
+wjakethompson disagrees (see https://github.com/wjakethompson/sr2-solutions/blob/main/03-more-linear-models.Rmd). I will include both then, but I'm not very confident. 
+
+
+```{r 5h2.quap}
+m5h2 <- rethinking::quap(
+  alist(
+    ## M -> A -> D
+    D ~ dnorm(mu, sigma),
+    mu <- a + bA*A + bM*M,
+    a ~ dnorm(0, 0.2),
+    bA ~ dnorm(0, 0.5),
+    bM ~ dnorm(0, 0.5),
+    sigma ~ dexp(1),
+    
+    ## M -> A
+    A ~ dnorm(mu_A, sigma_A),
+    mu_A <- aA + bAA*M,
+    aA ~ dnorm(0, 0.2),
+    bAA ~ dnorm(0, 0.5),
+    sigma_A ~ dexp(1)
+  ), data = d2
+)
+
+rethinking::precis(m5h2)
+
+
+M_seq <- seq(from = -3, to = 3, length.out = 50)
+
+# now to simulate and plot the counterfactual
+
+sim_dat <- data.frame(M = M_seq)
+
+s <- rethinking::sim(m5h2,
+                     data = sim_dat,
+                     vars = c("A", "D"))
+
+plot(sim_dat$M * M_sd + M_mean, colMeans(s$D), ylim = c(-2, 2), type = "l")
+rethinking::shade(apply(s$D, 2, rethinking::PI), sim_dat$M * M_sd + M_mean)
+```
+
+The effect of halving the marriage rate depends on the rate itself. From M = 30 to M = 15, Divorce falls about 1SD; from M = 20 to M = 10, the fall is  a bit smaller than 1SD.
+
+But we can do a bit better: if
+
+$$D = \alpha + \beta M $$
+
+Then 
+
+$$D_{\frac{1}{2}M} = \alpha + \beta * (\frac{1}{2} M)  $$
+
+And we can use these to say exactly how we predict D to change when we halve M. The *difference* between the new value and the original value will be
+
+$$
+D_{\frac{1}{2}M} - D = \alpha + \beta * (\frac{1}{2} M) - (\alpha + \beta M)
+$$
+
+Which we simplify to 
+$$
+D_{\frac{1}{2}M} - D = -\frac{1}{2}\beta M
+$$
+```{r}
+unscaled <- NULL
+unscaled$M <- sim_dat$M * M_sd + M_mean
+
+
+lm(colMeans(s$D) ~ (unscaled$M) )
+```
+
+From this simple linear model we estimate $\beta = 0.095$. As a sanity check, we calculate that the difference in Divorce rates when we go from M = 30 to M = 15 should equal 
+
+```{r}
+-0.5 * 0.095 * 30
+```
+This is a bigger jump than I predicted. Maybe it's hard to see from the graph?
+
+Next, doing it in `brms` and the `tidyverse`. 
