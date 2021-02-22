@@ -145,3 +145,28 @@ print(b5m4)
 summary(b5m4)
 ```
 
+## 5M5
+
+A DAG might be useful here. 
+
+```{r 5m5}
+ggdag::dagify(
+  Obesity ~ Exercise + EatingOut,
+  Exercise ~ Driving,
+  EatingOut ~ Driving, 
+  Driving ~ GasPrice
+) %>%
+  ggdag::ggdag(node_size = 22) +
+  theme_void()
+
+
+```
+How ugly! And it changes every time I run it. I embrace the chaos.
+
+Ok, so...
+
+* We could regress obesity on each of the predictors separately, just to confirm our intuitions.
+* We could regress obesity on gas price and driving. We would expect that the coefficent for GasPrice would shrink, since Driving would be holding most of the information
+* We could regress obesity on EatingOut and Exercise. The coefficients should shrink because they are collinear. 
+* We could regress obesity on EatingOut, Exercise, and Driving. The coefficient for Driving should shrink?
+
