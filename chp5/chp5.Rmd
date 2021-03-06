@@ -292,3 +292,59 @@ From this simple linear model we estimate $\beta = 0.095$. As a sanity check, we
 This is a bigger jump than I predicted. Maybe it's hard to see from the graph?
 
 Next, doing it in `brms` and the `tidyverse`. 
+
+```{r 5h2.brms}
+# first we specify each model separately
+d_model <- bf(D ~ 1 + A + M)
+a_model <- bf(A ~ 1 + M)
+
+b5h2 <-
+  brm(data = d2, 
+      family = gaussian,
+      d_model + a_model + set_rescor(FALSE),
+      prior = c(prior(normal(0, 0.2), class = Intercept, resp = D),
+                prior(normal(0, 0.5), class = b, resp = D),
+                prior(exponential(1), class = sigma, resp = D),
+                
+                prior(normal(0, 0.2), class = Intercept, resp = A),
+                prior(normal(0, 0.5), class = b, resp = A),
+                prior(exponential(1), class = sigma, resp = A)),
+      iter = 2000, warmup = 1000, chains = 4, cores = 4,
+      seed = 5,
+      file = "fits/b5h2")
+
+print(b5h2)
+
+
+nd <- tibble(
+  M = seq(from = -3, to = 3, length.out = 50)
+)
+
+# now to simulate and plot the counterfactual
+
+nd_2 <- predict(b5h2,
+  resp = "A",
+  newdata = nd
+) %>%
+  data.frame() %>%
+  bind_cols(nd) %>%
+  rename(
+    A = Estimate
+  ) %>%
+  select(A, M)
+
+# If I don't first predict A based on M and only then predict D based on A and
+# M, the relationship is negative. (If I set A = 0 like in the brms example here
+# ): https://bookdown.org/content/4857/the-many-variables-the-spurious-waffles.html#counterfactual-plots.
+predict(b5h2,
+  resp = "D",
+  newdata = nd_2
+) %>%
+  data.frame() %>%
+  bind_cols(nd_2) %>%
+  mutate(
+    M = M * M_sd + M_mean
+  ) %>%
+  ggplot(aes(x = M, y = Estimate, ymin = Q2.5, ymax = Q97.5)) +
+  geom_smooth(stat = "identity")
+```
