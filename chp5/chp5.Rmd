@@ -348,3 +348,77 @@ predict(b5h2,
   ggplot(aes(x = M, y = Estimate, ymin = Q2.5, ymax = Q97.5)) +
   geom_smooth(stat = "identity")
 ```
+
+## 5H3
+
+We're working with the following DAG, computing the counterfactual effect on K of doubling M.
+
+```{r 5h3.dag}
+dag5h3 <- dagitty::dagitty(
+  "dag{M -> N; N -> K; M -> K}",
+  layout = TRUE
+)
+
+plot(dag5h3)
+```
+
+First, we need to get the data:
+
+```{r 5h3data}
+data(milk, package = "rethinking")
+
+d <- milk %>%
+  dplyr::mutate(
+    K = rethinking::standardize(kcal.per.g),
+    N = rethinking::standardize(neocortex.perc),
+    M = rethinking::standardize(log(mass))
+  ) %>%
+  
+  dplyr::select(K, N, M) %>%
+  
+  dplyr::filter(
+    !is.na(K) & !is.na(N) & !is.na(M)
+  )
+```
+
+```{r 5h3quap}
+# adapting the code I used before 
+
+m5h3 <- rethinking::quap(
+  alist(
+    ## M -> N -> K
+    K ~ dnorm(mu, sigma),
+    mu <- a + bM*M + bN*N,
+    a ~ dnorm(0, 0.2),
+    bM ~ dnorm(0, 0.5),
+    bN ~ dnorm(0, 0.5),
+    sigma ~ dexp(1),
+    
+    ## M -> N
+    N ~ dnorm(mu_N, sigma_N),
+    mu_N <- aN + bNM*M,
+    aN ~ dnorm(0, 0.2),
+    bNM ~ dnorm(0, 0.5),
+    sigma_N ~ dexp(1)
+  ), data = d
+)
+
+rethinking::precis(m5h3)
+
+
+M_seq <- seq(from = -3, to = 3, length.out = 50)
+
+# now to simulate and plot the counterfactual
+
+sim_dat <- data.frame(M = M_seq)
+
+s <- rethinking::sim(m5h3,
+                     data = sim_dat,
+                     vars = c("N", "K"))
+
+plot(sim_dat$M, colMeans(s$K), ylim = c(-2, 2), type = "l")
+rethinking::shade(apply(s$K, 2, rethinking::PI), sim_dat$M)
+```
+I'm not 100% confident, but I'll stop here for now. 
+
+Seeing these solutions (https://sr2-solutions.wjakethompson.com/more-linear-models.html#chapter-5) I think I understand why I couldn't replicate the graph. 
