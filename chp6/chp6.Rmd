@@ -1,0 +1,114 @@
+---
+title: "chp6"
+author: "Vasco Brazão"
+date: "09/06/2021"
+output: pdf_document
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(tidyverse)
+library(here)
+```
+
+I did 6E1 - 6M1 in a paper notebook and am too lazy to type things up right now.
+
+## 6M2
+
+We should simulate from DAG X -> Z -> Y, such that the correlation between X and Z is very large.
+
+```{r 6m2.data}
+Nsim <- 1000
+
+dat <- tibble::tibble(
+  x = rnorm(n = Nsim),
+  z = rnorm(n = Nsim, mean = x, sd = 0.5),
+  e = rnorm(n = Nsim),
+  y = rnorm(n = Nsim, mean = z + e)
+)
+
+pairs(dat)
+
+cor(dat)
+```
+```{r 6m2.lm}
+summary(lm(y ~ x + z, data = dat))
+```
+First, we can see that we were successful in simulating from the DAG and creating a rather large association between the predictors.
+
+Next, we see no "problem" in the linear model results -- only z has a a large estimated coefficient. Let's replicate this result in `quap` and `brms`.
+
+```{r 6m2.quap}
+q6m2 <- rethinking::quap(
+  alist(
+    y ~ dnorm(mu, sigma),
+    mu <- a + bx*x + bz*z,
+    a ~ dnorm(0, 2),
+    bx ~ dnorm(0, 2),
+    bz ~ dnorm(0, 2),
+    sigma ~ dexp(1)
+  ), data = dat
+)
+
+rethinking::precis(q6m2)
+
+library(rethinking)
+
+plot(precis(q6m2))
+
+post <- rethinking::extract.samples(q6m2)
+
+plot(bx ~ bz, post, col = col.alpha(rangi2, 0.1), pch = 16)
+
+cor(post$bx, post$bz)
+```
+Here we see that, conditional on the model, bx and bz are quite strongly correlated.
+
+The diference here is that X does not actually affect Y directly, while in the legs example both legs are affected by the height of the person.
+
+Let's just code this model in brms.
+
+```{r 6m3.brms}
+detach(package:rethinking, unload=TRUE)
+
+library(brms)
+
+b6m2 <- brm(
+  data = dat,
+  family = gaussian,
+  y ~ 1 + x + z,
+  prior = c(prior(normal(0, 2), class = Intercept),
+            prior(normal(0, 2), class = b),
+            prior(exponential(1), class = sigma)),
+  iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  file = here::here("chp6", "b6m2")
+)
+
+print(b6m2)
+
+brms::mcmc_plot(b6m2,
+               type = "intervals",
+               prob = .5,
+               prob_outer = .95,
+               point_est = "mean")
+
+pairs(b6m2, pars = parnames(b6m2)[2:3])
+```
+Ooh what cool plots we can make.
+
+## 6M3
+
+Going clockwise, starting at top left DAG:
+
+1. Z 
+2. nothing
+3. nothing
+4. A
+
+Needed a lot of help from wjakethompson. Perhaps I'm a bit rusty. Totally forgot that we want to include indirect causal paths.
+
+
