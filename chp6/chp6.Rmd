@@ -111,4 +111,125 @@ Going clockwise, starting at top left DAG:
 
 Needed a lot of help from wjakethompson. Perhaps I'm a bit rusty. Totally forgot that we want to include indirect causal paths.
 
+## 6H1
+Admittely, am a little tired of this divorce data.
+
+```{r 6h1.dat}
+## detach(package:brms, unload=TRUE)
+## 
+## library(rethinking)
+## 
+## data(WaffleDivorce)
+## waffle <- WaffleDivorce
+## 
+## waffle <- waffle %>%
+##   mutate(
+##     
+##   )
+```
+
+So I'm skipping these two and moving on to the foxes.
+
+## 6H3
+
+```{r}
+library(rethinking)
+
+data(foxes)
+
+foxes_z <- foxes %>%
+  dplyr::mutate(
+    across(.cols = avgfood:weight,
+           .fns = ~ rethinking::standardize(.))
+  )
+```
+
+First, I standardized the variables.
+
+Then, the simplest model for area + weight I can think of:
+
+\begin{align*}
+\text{weight}_i & \sim \operatorname{Normal}(\mu_i, \sigma) \\
+\mu_i & = \alpha + \beta \text{area}_i \\
+\alpha & \sim \operatorname{Normal}(0, 1) \\
+\beta  & \sim \operatorname{Normal}(0, 10) \\
+\sigma & \sim \operatorname{Exponential}(1)
+\end{align*}
+
+```{r}
+detach(package:rethinking, unload=TRUE)
+
+library(brms)
+
+m6h3 <- brms::brm(
+  data = foxes_z,
+  family = "gaussian",
+  formula = weight ~ 1 + area,
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 10), class = b),
+            prior(exponential(1), class = sigma)),
+  iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  file = here::here("chp6", "fits", "m6h3")
+)
+```
+
+What does our model think about the relationship between area and mean weight?
+
+```{r}
+nlines <- 100
+
+lines <- 
+  tibble(
+    n = 1:nlines,
+    a = rnorm(nlines, mean = 0, sd = 1),
+    b = rnorm(nlines, mean = 0, sd = 10)
+  ) %>%
+  expand(nesting(n, a, b), area = range(foxes_z$area)) %>%
+  mutate(
+    weight = a + b * area
+  )
+
+lines %>%
+  ggplot(aes(x = area, y = weight, group = n)) +
+  geom_line()
+```
+Ok, this is nuts. Our model thinks mean weight can increase tens of SDs from its mean as area grows or shrinks.
+
+```{r}
+nlines <- 100
+
+lines <- 
+  tibble(
+    n = 1:nlines,
+    a = rnorm(nlines, mean = 0, sd = 1),
+    b = rnorm(nlines, mean = 0, sd = 2)
+  ) %>%
+  expand(nesting(n, a, b), area = range(foxes_z$area)) %>%
+  mutate(
+    weight = a + b * area
+  )
+
+lines %>%
+  ggplot(aes(x = area, y = weight, group = n)) +
+  geom_line()
+```
+
+Perhaps this prior would serve us better.
+
+What distribution of weights does it predict?
+
+```{r}
+weights <- 
+  lines %>%
+  mutate(
+    sd = rexp(n = n(), rate = 1),
+    pred_weight = rnorm(n = n(), mean = weight, sd = sd)
+  )
+
+hist(weights$pred_weight)
+```
+
+It does predict that some foxes will weight way more or less than average, but it's not insane, maybe.
+
+Next up: counterfactual plots. https://bookdown.org/content/4857/the-many-variables-the-spurious-waffles.html#approximating-the-posterior.
 
