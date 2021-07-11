@@ -231,5 +231,101 @@ hist(weights$pred_weight)
 
 It does predict that some foxes will weight way more or less than average, but it's not insane, maybe.
 
-Next up: counterfactual plots. https://bookdown.org/content/4857/the-many-variables-the-spurious-waffles.html#approximating-the-posterior.
+Let's thus fit the model with these slightly updated priors.
 
+```{r}
+m6h3.2 <- brms::brm(
+  data = foxes_z,
+  family = "gaussian",
+  formula = weight ~ 1 + area,
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 2), class = b),
+            prior(exponential(1), class = sigma)),
+  iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  file = here::here("chp6", "fits", "m6h3.2")
+)
+
+plot(m6h3.2)
+
+# using the next bit of code from wjakethompson https://github.com/wjakethompson/sr2-solutions/blob/main/03-more-linear-models.Rmd
+
+posterior_samples(m6h3.2) %>%
+  as_tibble() %>%
+  select(-lp__) %>%
+  pivot_longer(everything()) %>%
+  mutate(name = factor(name, levels = c("b_Intercept", "b_area", "sigma"))) %>%
+  ggplot(aes(x = value, y = fct_rev(name))) +
+  tidybayes::stat_halfeye(.width = c(0.67, 0.89, 0.97)) +
+  labs(x = "Parameter Estimate", y = "Parameter")
+```
+
+Pretty clear that there's probably no impact of area on weight.
+
+## 6H4
+
+We don't adjust, because we want the effect of both paths (food -> weight and food -> groupsize -> weight)
+
+```{r}
+m6h4 <- brms::brm(
+  data = foxes_z,
+  family = "gaussian",
+  formula = weight ~ 1 + avgfood,
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 2), class = b),
+            prior(exponential(1), class = sigma)),
+  iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  file = here::here("chp6", "fits", "m6h4")
+)
+
+plot(m6h4)
+
+summary(m6h4)
+
+posterior_samples(m6h4) %>%
+  as_tibble() %>%
+  select(-lp__) %>%
+  pivot_longer(everything()) %>%
+  mutate(name = factor(name, levels = c("b_Intercept", "b_avgfood", "sigma"))) %>%
+  ggplot(aes(x = value, y = fct_rev(name))) +
+  tidybayes::stat_halfeye(.width = c(0.67, 0.89, 0.97)) +
+  labs(x = "Parameter Estimate", y = "Parameter")
+```
+Once again, we find no effect.
+
+## 6H5
+
+Here we need to adjust for avgfood to close the back-door path.
+
+```{r}
+m6h5 <- brms::brm(
+  data = foxes_z,
+  family = "gaussian",
+  formula = weight ~ 1 + groupsize + avgfood,
+  prior = c(prior(normal(0, 1), class = Intercept),
+            prior(normal(0, 2), class = b),
+            prior(exponential(1), class = sigma)),
+  iter = 2000, warmup = 1000, chains = 4, cores = 4,
+  file = here::here("chp6", "fits", "m6h5")
+)
+
+plot(m6h5)
+
+summary(m6h5)
+
+posterior_samples(m6h5) %>%
+  as_tibble() %>%
+  select(-lp__) %>%
+  pivot_longer(everything()) %>%
+  mutate(name = factor(name, levels = c("b_Intercept", "b_groupsize", "b_avgfood", "sigma"))) %>%
+  ggplot(aes(x = value, y = fct_rev(name))) +
+  tidybayes::stat_halfeye(.width = c(0.67, 0.89, 0.97)) +
+  labs(x = "Parameter Estimate", y = "Parameter")
+```
+
+Post-treatment bias! Increasing food increases weight, holding groupsize constant. Holding food constant, increasing group size increases weight.
+
+We didn't see a total effect of avgfood previously, because it cancels out its own effect by increasing group size.
+
+## 6H6
+
+I'll reserve this and the next one for when I have a suitable research question. 

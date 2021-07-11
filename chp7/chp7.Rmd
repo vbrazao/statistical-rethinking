@@ -1,0 +1,156 @@
+---
+title: "chp6"
+author: "Vasco Brazão"
+date: "11/06/2021"
+output: pdf_document
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 7E1
+
+The measure...
+
+1. Should be continuous. It shouldn't change too drastically based on slightly different inputs.
+2. Should scale with the number of possible events -- the more different things can happen, the less certain we can be about what thing will happen, so they higher the entropy / uncertainty.
+3. Should be additive. When we combine different sets of options into a new set containing all possible combinations, the new uncertainty should be the sum of the uncertainties of the sets we combined.
+
+## 7E2
+
+The entropy of the coin is:
+
+```{r}
+- (0.7 * log(0.7) + 0.3 * log(0.3))
+```
+## 7E3
+
+```{r}
+p <- c(.20, .25, .25, .30)
+
+- sum(p*log(p))
+```
+
+## 7E4
+
+```{r}
+p <- c(1/3, 1/3, 1/3)
+
+- sum(p*log(p))
+```
+
+## 7M1
+
+First, we define "lppd": the log-pointwise-predictive-density is the sum over all N observations of the mean* of the log probability of each observed value given the posterior distribution .
+
+Thus. AIC = -2ppd + 2p
+
+p being the number of free parameters in the posterior distribution.
+
+WAIC = -2lppd + a penalty term
+
+This penalty term is not just "2p", but is instead the sum of the variance of the log probability of each observation given the posterior distribution. This is more general, because the risk of overfitting does not necessarily scale with the number of parameters, but depends on the way the parameters are related to one another.
+
+To turn the more general criterion into the less general one, we must assume:
+
+1. flat or inconsequetial priors
+2. multivariate gaussian posterior
+3. sample size much larger than number of parameters
+
+*mean here being the sum over all samples from a Markov chain divided by the number of samples
+
+## 7M2
+
+In model selection, we use some criterion to choose one model out of several that we fit, and then perform inference based on that selected model, "throwing away" the others. In model comparison, we use multiple models (as well as extra info like information criteria and one or several causal models) to understand the problem and the relations between variables.
+
+## 7M3
+
+Models will have higher values on the information criteria just because there are more observations to sum over, regardless of whether the model is "worse" or not.
+
+## 7M4
+
+With informative priors, the "number of effective parameters" (overfitting penalty) gets smaller.
+
+## 7M5
+
+Informative priors tell the model parameters to be less excited about extreme observations, and only become extreme if there are many extreme observations.
+
+## 7M6
+
+Conversely, if our priors are too narrow, we might not learn enough from our sample. If the information we put into the model (the priors) is wrong, we won't change our mind as much when faced with the data.
+
+## 7H1
+
+Fun!
+
+```{r}
+library(rethinking)
+
+data("Laffer")
+
+detach(package:rethinking, unload = TRUE)
+
+library(brms)
+library(tidyverse)
+library(here)
+
+d <- Laffer %>%
+  mutate(tax_rate_sq = tax_rate ^ 2,
+         across(everything(), rethinking::standardize))
+
+m_line <- brm(tax_revenue ~ 1 + tax_rate, data = d, 
+              family = gaussian,
+              prior = c(prior(normal(0, 1), class = Intercept),
+                          prior(normal(0, 1), class = b),
+                          prior(exponential(1), class = sigma)),
+              iter = 4000, warmup = 2000, chains = 4, cores = 4,
+                file = here("chp7", "fits", "7h1line"))
+m_quad <- brm(tax_revenue ~ 1 + tax_rate + tax_rate_sq, data = d,
+              family = gaussian,
+                prior = c(prior(normal(0, 1), class = Intercept),
+                          prior(normal(0, 1), class = b),
+                          prior(exponential(1), class = sigma)),
+                iter = 4000, warmup = 2000, chains = 4, cores = 4,
+                file = here("chp7", "fits", "7h1quad"))
+m_linet <- brm(bf(tax_revenue ~ 1 + tax_rate, nu = 2), data = d, 
+              family = student,
+              prior = c(prior(normal(0, 1), class = Intercept),
+                          prior(normal(0, 1), class = b),
+                          prior(exponential(1), class = sigma)),
+              iter = 4000, warmup = 2000, chains = 4, cores = 4,
+                file = here("chp7", "fits", "7h1linet"))
+m_quadt <- brm(bf(tax_revenue ~ 1 + tax_rate + tax_rate_sq, nu = 2), data = d,
+              family = student,
+                prior = c(prior(normal(0, 1), class = Intercept),
+                          prior(normal(0, 1), class = b),
+                          prior(exponential(1), class = sigma)),
+                iter = 4000, warmup = 2000, chains = 4, cores = 4,
+                file = here("chp7", "fits", "7h1quadt"))
+
+plot(m_line)
+
+plot(m_linet)
+
+plot(m_quad)
+
+plot(m_quadt)
+
+library(loo)
+m_line <- add_criterion(m_line, criterion = c("loo", "waic"),
+                          overwrite = TRUE, force_save = TRUE)
+m_quad <- add_criterion(m_quad, criterion = c("loo", "waic"),
+                          overwrite = TRUE, force_save = TRUE)
+m_linet <- add_criterion(m_linet, criterion = c("loo", "waic"),
+                          overwrite = TRUE, force_save = TRUE)
+m_quadt <- add_criterion(m_quadt, criterion = c("loo", "waic"),
+                          overwrite = TRUE, force_save = TRUE)
+
+loo_compare(m_line, m_quad, m_linet, m_quadt, criterion = "waic")
+
+loo_compare(m_line, m_quad, m_linet, m_quadt, criterion = "loo")
+
+```
+Next up: take time to understand how wjakethompson visualized the different models.
+
