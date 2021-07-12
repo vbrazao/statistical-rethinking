@@ -151,6 +151,57 @@ loo_compare(m_line, m_quad, m_linet, m_quadt, criterion = "waic")
 
 loo_compare(m_line, m_quad, m_linet, m_quadt, criterion = "loo")
 
+nd <- tibble(tax_rate = seq(0, 40, length.out = 100)) %>%
+  mutate(tax_rate_sq = tax_rate ^ 2,
+         tax_rate = (tax_rate - mean(Laffer$tax_rate)) / sd(Laffer$tax_rate),
+         tax_rate_sq = (tax_rate_sq - mean(Laffer$tax_rate ^ 2)) /
+           sd(Laffer$tax_rate ^ 2))
+
+library(tidybayes)
+
+predictions <- bind_rows(
+  predicted_draws(model = m_line, newdata = nd)  %>%
+    median_qi(.width = 0.89) %>%
+    mutate(type = "Linear"),
+  predicted_draws(model = m_linet, newdata = nd) %>%
+    median_qi(.width = 0.89) %>% 
+    mutate(type = "LinearT"),
+  predicted_draws(model = m_quad, newdata = nd)  %>%
+    median_qi(.width = 0.89) %>%
+    mutate(type = "Quadratic"),
+  predicted_draws(model = m_quadt, newdata = nd) %>%
+    median_qi(.width = 0.89) %>% 
+    mutate(type = "QuadraticT")
+)
+
+fits <- bind_rows(
+  fitted_draws(model = m_line, newdata = nd)  %>%
+    median_qi(.width = c(0.67, 0.89, 0.97)) %>%
+    mutate(type = "Linear"),
+  fitted_draws(model = m_linet, newdata = nd) %>%
+    median_qi(.width = c(0.67, 0.89, 0.97)) %>% 
+    mutate(type = "LinearT"),
+  fitted_draws(model = m_quad, newdata = nd)  %>%
+    median_qi(.width = c(0.67, 0.89, 0.97)) %>%
+    mutate(type = "Quadratic"),
+  fitted_draws(model = m_quadt, newdata = nd) %>%
+    median_qi(.width = c(0.67, 0.89, 0.97)) %>% 
+    mutate(type = "QuadraticT")
+)
+
+
+ggplot() +
+  facet_wrap(~type) +
+  geom_ribbon(data = predictions,
+              aes(x = tax_rate, ymin = .lower, ymax = .upper),
+              alpha = 0.5) +
+  geom_lineribbon(data = fits,
+                  aes(x = tax_rate, y = .value, ymin = .lower, ymax = .upper),
+                  size = 0.6) +
+  geom_point(data = d, aes(x = tax_rate, y = tax_revenue),
+             alpha = 0.5) +
+  scale_fill_brewer(palette = "Blues", breaks = c(0.67, 0.89, 0.97))
+
 ```
-Next up: take time to understand how wjakethompson visualized the different models.
+Next up: take time to understand how wjakethompson visualized the different models.(.. in progress)
 
